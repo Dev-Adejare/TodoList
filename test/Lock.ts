@@ -125,3 +125,73 @@ describe("Lock", function () {
     });
   });
 });
+
+
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
+
+import "truffle/Assert.sol";
+import "truffle/DeployedAddresses.sol";
+import "../contracts/TodoList.sol";
+
+contract TestTodoList {
+    // Create a new instance of the TodoList contract for testing
+    TodoList todoList;
+
+    function beforeAll() public {
+        // Deploy the contract before running tests
+        todoList = new TodoList();
+    }
+
+    function testOwnerIsSetCorrectly() public {
+        // Assert that the owner of the contract is the address running the test
+        address expectedOwner = address(this);
+        address owner = todoList.owner();
+        Assert.equal(owner, expectedOwner, "Owner should be the address deploying the contract");
+    }
+
+    function testCreateTodo() public {
+        // Test creating a new todo
+        bool created = todoList.createTodo("Test Todo", "This is a test todo");
+        Assert.isTrue(created, "Todo should be created successfully");
+
+        // Verify the newly created todo
+        (string memory title, string memory description, TodoList.Status status) = todoList.getTodo(0);
+        Assert.equal(title, "Test Todo", "Todo title should match");
+        Assert.equal(description, "This is a test todo", "Todo description should match");
+        Assert.equal(uint(status), uint(TodoList.Status.Created), "Todo status should be 'Created'");
+    }
+
+    function testUpdateTodo() public {
+        // Test updating a todo
+        todoList.updateTodo(0, "Updated Test Todo", "This is an updated test todo");
+
+        // Verify the updated todo
+        (string memory title, string memory description, TodoList.Status status) = todoList.getTodo(0);
+        Assert.equal(title, "Updated Test Todo", "Todo title should be updated");
+        Assert.equal(description, "This is an updated test todo", "Todo description should be updated");
+        Assert.equal(uint(status), uint(TodoList.Status.Edited), "Todo status should be 'Edited'");
+    }
+
+    function testCompleteTodo() public {
+        // Test marking a todo as completed
+        bool completed = todoList.todoCompleted(0);
+        Assert.isTrue(completed, "Todo should be marked as completed");
+
+        // Verify the todo's status
+        (, , TodoList.Status status) = todoList.getTodo(0);
+        Assert.equal(uint(status), uint(TodoList.Status.Done), "Todo status should be 'Done'");
+    }
+
+    function testDeleteTodo() public {
+        // Test deleting a todo
+        todoList.deleteTodo(0);
+
+        // Verify that the todo list is empty after deletion
+        TodoList.Todo[] memory allTodos = todoList.getAllTodo();
+        Assert.equal(allTodos.length, 0, "Todo list should be empty after deletion");
+    }
+}
+
