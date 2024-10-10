@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-contract TodoList {
+contract Todos {
     address public owner;
     enum Status {None, Created, Edited, Done}
 
@@ -85,3 +85,6 @@ contract TodoList {
 
     }
 }
+
+
+
